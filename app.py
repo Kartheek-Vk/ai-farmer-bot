@@ -117,9 +117,33 @@ st.markdown(
         }
         div[data-testid="stNumberInput"] input,
         div[data-testid="stTextInput"] input {
-            background-color: rgba(15, 23, 42, 0.95);
-            color: #f8fafc;
-            border-radius: 12px;
+            background-color: rgba(30, 41, 59, 0.9) !important;
+            color: #f8fafc !important;
+            border-radius: 12px !important;
+            border: 2px solid rgba(148, 163, 184, 0.3) !important;
+            padding: 10px 12px !important;
+            font-size: 14px !important;
+            cursor: text !important;
+            width: 100% !important;
+            box-sizing: border-box !important;
+        }
+        div[data-testid="stNumberInput"] input:focus,
+        div[data-testid="stTextInput"] input:focus {
+            background-color: rgba(30, 41, 59, 1) !important;
+            border: 2px solid #84cc16 !important;
+            outline: none !important;
+            box-shadow: 0 0 0 3px rgba(132, 204, 22, 0.1) !important;
+        }
+        div[data-testid="stNumberInput"] input::placeholder,
+        div[data-testid="stTextInput"] input::placeholder {
+            color: #94a3b8 !important;
+        }
+        div[data-testid="stTextInput"] {
+            pointer-events: auto !important;
+        }
+        div[data-testid="stTextInput"] label {
+            color: #d1d5db !important;
+            margin-bottom: 0.5rem !important;
         }
     </style>
     """,
@@ -214,31 +238,33 @@ with left_col:
     st.subheader("Input Panel")
     st.caption("Enter soil and climate values to generate a recommendation.")
 
-    st.markdown('<div class="panel-card">', unsafe_allow_html=True)
-
-    n_input = st.text_input("Nitrogen (N)", placeholder="e.g. 90")
-    p_input = st.text_input("Phosphorus (P)", placeholder="e.g. 40")
-    k_input = st.text_input("Potassium (K)", placeholder="e.g. 40")
-    temp_input = st.text_input("Temperature", placeholder="e.g. 25")
-    humidity_input = st.text_input("Humidity", placeholder="e.g. 80")
-    ph_input = st.text_input("pH", placeholder="e.g. 6.5")
-    rainfall_input = st.text_input("Rainfall", placeholder="e.g. 200")
+    with st.container(border=True):
+        n_input = st.text_input("Nitrogen (N)", placeholder="e.g. 90", key="n_input")
+        p_input = st.text_input("Phosphorus (P)", placeholder="e.g. 40", key="p_input")
+        k_input = st.text_input("Potassium (K)", placeholder="e.g. 40", key="k_input")
+        temp_input = st.text_input("Temperature", placeholder="e.g. 25", key="temp_input")
+        humidity_input = st.text_input("Humidity", placeholder="e.g. 80", key="humidity_input")
+        ph_input = st.text_input("pH", placeholder="e.g. 6.5", key="ph_input")
+        rainfall_input = st.text_input("Rainfall", placeholder="e.g. 200", key="rainfall_input")
 
     st.divider()
 
     if st.button("🚀 Get Recommendation"):
         values = [
-            n_input,
-            p_input,
-            k_input,
-            temp_input,
-            humidity_input,
-            ph_input,
-            rainfall_input,
+            st.session_state.n_input,
+            st.session_state.p_input,
+            st.session_state.k_input,
+            st.session_state.temp_input,
+            st.session_state.humidity_input,
+            st.session_state.ph_input,
+            st.session_state.rainfall_input
         ]
-
-        if any(not str(value).strip() for value in values):
-            st.warning("Please fill in all input fields before requesting a recommendation.")
+        labels = ["Nitrogen (N)", "Phosphorus (P)", "Potassium (K)", "Temperature", "Humidity", "pH", "Rainfall"]
+        
+        empty_fields = [labels[i] for i, v in enumerate(values) if not str(v).strip()]
+        
+        if empty_fields:
+            st.warning(f"⚠️ Please fill in these fields: {', '.join(empty_fields)}")
         else:
             with st.spinner("Analyzing farm conditions and generating recommendation..."):
                 try:
@@ -251,19 +277,11 @@ with left_col:
                     rainfall_value = parse_float("Rainfall", rainfall_input)
 
                     st.session_state.result = decision_function(
-                        n_value,
-                        p_value,
-                        k_value,
-                        temp_value,
-                        humidity_value,
-                        ph_value,
-                        rainfall_value,
+                        n_value, p_value, k_value, temp_value, humidity_value, ph_value, rainfall_value
                     )
                 except Exception as error:
                     st.session_state.result = None
                     st.error(f"Unable to generate recommendation: {error}")
-
-    st.markdown('</div>', unsafe_allow_html=True)
 
 
 with right_col:
